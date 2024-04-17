@@ -214,7 +214,6 @@ export class GameView extends View {
     if (this.#isGameOver() || this.#isGameClear()) {
       this.isVisible = false;
     }
-    console.log(this.isVisible);
 
     // ボールを移動する
     this.#ball.move();

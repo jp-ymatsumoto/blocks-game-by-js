@@ -54,7 +54,7 @@ export class BlocksGame {
   #run() {
     switch (this.#viewname) {
       case "MainView":
-        console.log("MainView");
+        // console.log("MainView");
         // ゲーム画面を描画する
         this.#gameView.draw();
         // メイン画面を描画する
@@ -65,7 +65,7 @@ export class BlocksGame {
         }
         break;
       case "GameView":
-        console.log("GameView");
+        // console.log("GameView");
         // 画面をクリアする
         this.#context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
         // ゲーム画面を更新する
@@ -78,7 +78,7 @@ export class BlocksGame {
         }
         break;
       case "ResultView":
-        console.log("ResultView");
+        // console.log("ResultView");
         // 結果画面を描画する
         this.#resultView.draw(this.#gameView.resultMessage);
         //  ゲームを停止する
