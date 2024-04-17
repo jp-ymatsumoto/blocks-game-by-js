@@ -1,35 +1,24 @@
 "use strict";
+import { MainView } from "./views/mainview.js";
+import { GameView } from "./views/gameview.js";
+import { ResultView } from "./views/resultview.js";
 
-import { MainView } from "./mainview.js";
-import { GameView } from "./gameview.js";
-import { ResultView } from "./resultview.js";
-
-/**
- * BlocksGameクラス
- * @class
- */
 export class BlocksGame {
-  /** キャンバス @member {HTMLCanvasElement} */
   #canvas;
-  /** コンテキスト @member {CanvasRenderingContext2D} */
   #context;
-  /** インターバルID @member {number} */
-  #intervalId = null;
-  /** インターバルの時間(ミリ秒) @member {number} */
-  #intervalMs = 1000 / 60;
-  /** ビューの名前 @member {string} */
+  /** 画面に表示するビューの名前 */
   #viewname = "";
-  /** MainView @member {MainView} */
-  #mainView;
-  /** GameView @member {GameView} */
-  #gameView;
-  /** ResultView @member {ResultView} */
-  #resultView;
+  /** メイン画面 */
+  #mainView = null;
+  /** ゲーム画面 */
+  #gameView = null;
+  /** 結果画面 */
+  #resultView = null;
+  /** インターバルID */
+  #intervalId = null;
+  /** インターバルの時間 */
+  #INTERVAL_TIME_MS = 1000 / 60;
 
-  /**
-   * コンストラクター
-   * @param {string} canvasId キャンバスID
-   */
   constructor(canvasId) {
     this.#canvas = document.getElementById(canvasId);
     if (this.#canvas === null) {
@@ -37,116 +26,89 @@ export class BlocksGame {
     }
     this.#context = this.#canvas.getContext("2d");
 
-    this.#mainView = new MainView(this.#context, true);
-    this.#gameView = new GameView(this.#context, true);
-    this.#resultView = new ResultView(this.#context, true);
+    this.#mainView = new MainView(this.#context);
+    this.#gameView = new GameView(this.#context);
+    this.#resultView = new ResultView(this.#context);
 
+    // 表示するビューをメイン画面にする
     this.#viewname = this.#mainView.constructor.name;
 
-    this.start();
+    // ゲームを開始する
+    this.#start();
   }
 
-  /**
-   * インターバルを開始する
-   */
-  start() {
-    // インターバルが既に開始している場合は何もしない
-    if (this.#intervalId !== null) {
-      return;
-    }
-    // インターバルを開始する
+  /** インターバルを開始する */
+  #start() {
     this.#intervalId = setInterval(() => {
       this.#run();
-    }, this.#intervalMs);
+    }, this.#INTERVAL_TIME_MS);
   }
 
-  /**
-   * インターバルを停止する
-   */
-  stop() {
-    // インターバルが既に停止している場合は何もしない
-    if (this.#intervalId === null) {
-      return;
-    }
-    // インターバルを停止する
+  /** インターバルを停止する */
+  #stop() {
     clearInterval(this.#intervalId);
     this.#intervalId = null;
   }
 
-  /**
-   * 実行する
-   */
+  /** インターバルで実行する関数 */
   #run() {
     switch (this.#viewname) {
-      // MainViewの時の処理
       case "MainView":
-        // ゲーム開始前のゲーム画面を描画する
+        console.log("MainView");
+        // ゲーム画面を描画する
         this.#gameView.draw();
         // メイン画面を描画する
         this.#mainView.draw();
-        // メイン画面が非表示になったらゲーム画面を表示する
-        if (this.#mainView.isShow === false) {
+        // メイン画面が非表示の場合はゲーム画面に切り替える
+        if (this.#mainView.isVisible === false) {
           this.#viewname = this.#gameView.constructor.name;
         }
         break;
-      // GameViewの時の処理
       case "GameView":
+        console.log("GameView");
         // 画面をクリアする
-        this.#clearDisplay();
-        // ゲームの状態を更新する
+        this.#context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
+        // ゲーム画面を更新する
         this.#gameView.update();
         // ゲーム画面を描画する
         this.#gameView.draw();
-        // ゲーム画面が非表示になったらリザルト画面を表示する
-        if (this.#gameView.isShow === false) {
+        // ゲーム画面が非表示の場合は結果画面に切り替える
+        if (this.#gameView.isVisible === false) {
           this.#viewname = this.#resultView.constructor.name;
         }
         break;
-      // ResultViewの時の処理
       case "ResultView":
-        // リザルト画面を描画する
+        console.log("ResultView");
+        // 結果画面を描画する
         this.#resultView.draw(this.#gameView.resultMessage);
-        // インターバルを停止する
-        this.stop();
+        //  ゲームを停止する
+        this.#stop();
         break;
     }
   }
 
-  /**
-   * キーを押した時の処理
-   * @param {string} key キー
-   */
-  setKeydown(key) {
+  setKeydownKey(key) {
     switch (this.#viewname) {
-      // MainViewの時の処理
       case "MainView":
-        this.#mainView.key = { [key]: true };
+        this.#mainView.executePlayerAction({ [key]: true });
         break;
-      // GameViewの時の処理
       case "GameView":
-        this.#gameView.key = { [key]: true };
+        this.#gameView.executePlayerAction({ [key]: true });
+        break;
+      case "ResultView":
         break;
     }
   }
 
-  /**
-   *　キーを離した時の処理
-   * @param {string} key キー
-   */
-  setKeyup(key) {
+  setKeyupKey(key) {
     switch (this.#viewname) {
-      // GameViewの時の処理
+      case "MainView":
+        break;
       case "GameView":
-        this.#gameView.key = { [key]: false };
+        this.#gameView.executePlayerAction({ [key]: false });
+        break;
+      case "ResultView":
         break;
     }
-  }
-
-  /**
-   * 画面をクリアする
-   * @private
-   */
-  #clearDisplay() {
-    this.#context.clearRect(0, 0, this.#canvas.width, this.#canvas.height);
   }
 }
