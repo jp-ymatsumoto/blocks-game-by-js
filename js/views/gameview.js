@@ -4,6 +4,7 @@ import { Ball } from "../game/ball.js";
 import { Paddle } from "../game/paddle.js";
 import { Block } from "../game/block.js";
 import { Bar } from "../game/bar.js";
+import { Sound } from "../game/sound.js";
 
 export class GameView extends View {
   /** ボール */
@@ -16,6 +17,10 @@ export class GameView extends View {
   resultMessage = "";
   /** ステータスバー */
   #bar;
+  /** パドルとボールの衝突音 */
+  #paddleBallSound = null;
+  /** ブロックとボールの衝突音 */
+  #blockBallSound = null;
 
   constructor(context) {
     super(context);
@@ -49,6 +54,11 @@ export class GameView extends View {
     ];
     // ステータスバーを生成する
     this.#bar = new Bar(context);
+
+    // パドルとボールの衝突音を生成する
+    this.#paddleBallSound = new Sound("./sounds/paddle-hit.mp3");
+    // ブロックとボールの衝突音を生成する
+    this.#blockBallSound = new Sound("./sounds/block-hit.mp3");
   }
 
   /** プレイヤーのキーアクションを実行する */
@@ -73,10 +83,7 @@ export class GameView extends View {
     const ballDy = this.#ball.dy;
 
     // ボールが左壁か右壁に衝突したらボールの向きを反転する
-    if (
-      ballX + ballDx < ballRadius ||
-      canvasWidth - ballRadius < ballX + ballDx
-    ) {
+    if (ballX + ballDx < ballRadius || canvasWidth - ballRadius < ballX + ballDx) {
       this.#ball.dx *= -1;
       return;
     }
@@ -115,6 +122,8 @@ export class GameView extends View {
       ballY + ballDy < paddleY + paddleHeight + ballRadius
     ) {
       this.#ball.dy *= -1;
+      // パドルとボールの衝突音を再生する
+      this.#paddleBallSound.play();
     }
   }
 
@@ -167,6 +176,8 @@ export class GameView extends View {
           block.status = false;
           // スコアを加算する
           this.#bar.addScore(Block.POINT);
+          // ブロックとボールの衝突音を再生する
+          this.#blockBallSound.play();
         }
       }
     });
@@ -179,8 +190,7 @@ export class GameView extends View {
     const ballDy = this.#ball.dy;
 
     // ボールが下壁に衝突したか検証する
-    const _isGameOver =
-      this.context.canvas.height - ballRadius < ballY + ballDy;
+    const _isGameOver = this.context.canvas.height - ballRadius < ballY + ballDy;
     if (_isGameOver) {
       // ゲーム結果を設定する
       this.resultMessage = "ゲームオーバー";
