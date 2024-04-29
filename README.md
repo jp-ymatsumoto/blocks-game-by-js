@@ -179,3 +179,15 @@ classDiagram
 ```
 
 </details>
+
+## v2
+
+### 技術スタック
+
+- JavaScript の基本構文（変数、配列、分岐処理、繰り返し処理、関数、クラス）
+- DOM とイベント（keydown イベント、keyup イベント）
+- canvas と audio
+
+### 画面
+
+![アプリ画像](images/v2.png)
