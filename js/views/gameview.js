@@ -2,7 +2,7 @@
 import { View } from "./view.js";
 import { Ball } from "../game/ball.js";
 import { Paddle } from "../game/paddle.js";
-import { Block } from "../game/block.js";
+import { Block, HardBlock } from "../game/block.js";
 import { Bar } from "../game/bar.js";
 import { Sound } from "../game/sound.js";
 
@@ -37,11 +37,11 @@ export class GameView extends View {
       new Block(context, 196, 40, 52, 20),
       new Block(context, 258, 40, 52, 20),
       new Block(context, 10, 70, 52, 20),
-      new Block(context, 72, 70, 52, 20),
+      new HardBlock(context, 72, 70, 52, 20),
       new Block(context, 134, 70, 52, 20),
       new Block(context, 196, 70, 52, 20),
       new Block(context, 258, 70, 52, 20),
-      new Block(context, 10, 100, 52, 20),
+      new HardBlock(context, 10, 100, 52, 20),
       new Block(context, 72, 100, 52, 20),
       new Block(context, 134, 100, 52, 20),
       new Block(context, 196, 100, 52, 20),
@@ -49,8 +49,8 @@ export class GameView extends View {
       new Block(context, 10, 130, 52, 20),
       new Block(context, 72, 130, 52, 20),
       new Block(context, 134, 130, 52, 20),
-      new Block(context, 196, 130, 52, 20),
-      new Block(context, 258, 130, 52, 20),
+      new HardBlock(context, 196, 130, 52, 20),
+      new HardBlock(context, 258, 130, 52, 20),
     ];
     // ステータスバーを生成する
     this.#bar = new Bar(context);
@@ -172,10 +172,21 @@ export class GameView extends View {
         ) {
           // ボールの向きを反転する
           this.#ball.dy *= -1;
-          // ブロックを非表示にする
-          block.status = false;
-          // スコアを加算する
-          this.#bar.addScore(Block.POINT);
+          if (block instanceof HardBlock) {
+            // HPを減らす
+            block.hp--;
+            if (block.hp <= 0) {
+              // ブロックを非表示にする
+              block.status = false;
+              // スコアを加算する
+              this.#bar.addScore(block.getPoint());
+            }
+          } else {
+            // ブロックを非表示にする
+            block.status = false;
+            // スコアを加算する
+            this.#bar.addScore(block.getPoint());
+          }
           // ブロックとボールの衝突音を再生する
           this.#blockBallSound.play();
         }
